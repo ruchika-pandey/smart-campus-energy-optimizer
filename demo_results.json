@@ -1,0 +1,28 @@
+{
+  "project": "Smart Campus Energy Optimizer",
+  "phase": "Week 2 - Integrated Demo",
+  "technology": "Python, Pandas, NumPy, Streamlit",
+  "next_phase": "MLOps Pipeline & Real ML Models",
+  "expected_impact": {
+    "energy_reduction": "15-20%",
+    "cost_savings": "\u20b915-20 lakhs annually",
+    "co2_reduction": "50-100 tons CO\u2082 yearly"
+  },
+  "demo_results": {
+    "predicted": 555.61,
+    "optimized": 472.27,
+    "saved_energy": 83.34,
+    "savings_percent": 15.0,
+    "financial": {
+      "daily": 666.73,
+      "monthly": 20001.96,
+      "annual": 243357.18
+    },
+    "environmental": {
+      "daily_co2": 68.34,
+      "monthly_co2": 2050.2,
+      "trees": 3.42
+    }
+  },
+  "timestamp": "2026-02-09T19:02:57.204645"
+}
