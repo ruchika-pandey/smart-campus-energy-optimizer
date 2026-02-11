@@ -14,7 +14,7 @@ class RealDatasetDownloader:
     
     def download_uci_energy_dataset(self):
         """Download UCI Appliances Energy Dataset"""
-        print("📥 Downloading UCI Energy Dataset...")
+        print(" Downloading UCI Energy Dataset...")
         
         url = "https://archive.ics.uci.edu/ml/machine-learning-databases/00374/energydata_complete.csv"
         
@@ -27,25 +27,25 @@ class RealDatasetDownloader:
             with open(file_path, 'wb') as f:
                 f.write(response.content)
             
-            print(f"✅ Downloaded: {file_path}")
+            print(f" Downloaded: {file_path}")
             
             # Load and display info
             df = pd.read_csv(file_path)
-            print(f"📊 Dataset Info:")
-            print(f"   • Rows: {len(df):,}")
-            print(f"   • Columns: {len(df.columns)}")
-            print(f"   • Date Range: {df['date'].min()} to {df['date'].max()}")
-            print(f"   • Size: {os.path.getsize(file_path) / (1024*1024):.2f} MB")
+            print(f" Dataset Info:")
+            print(f"    Rows: {len(df):,}")
+            print(f"    Columns: {len(df.columns)}")
+            print(f"    Date Range: {df['date'].min()} to {df['date'].max()}")
+            print(f"    Size: {os.path.getsize(file_path) / (1024*1024):.2f} MB")
             
             return df
             
         except Exception as e:
-            print(f"❌ Error downloading UCI dataset: {e}")
+            print(f" Error downloading UCI dataset: {e}")
             return None
     
     def download_openEI_dataset(self):
         """Download OpenEI building energy data"""
-        print("📥 Downloading OpenEI Building Energy Data...")
+        print(" Downloading OpenEI Building Energy Data...")
         
         # Sample dataset URL (alternative if main fails)
         sample_data = {
@@ -61,14 +61,14 @@ class RealDatasetDownloader:
         file_path = os.path.join(self.data_dir, "openei_building_energy.csv")
         df.to_csv(file_path, index=False)
         
-        print(f"✅ Created synthetic OpenEI dataset: {file_path}")
-        print(f"📊 Contains {len(df):,} hourly records for 50 buildings")
+        print(f" Created synthetic OpenEI dataset: {file_path}")
+        print(f" Contains {len(df):,} hourly records for 50 buildings")
         
         return df
     
     def create_research_based_dataset(self):
         """Create dataset based on published research papers"""
-        print("📚 Creating Research-Based Energy Dataset...")
+        print(" Creating Research-Based Energy Dataset...")
         print("Based on: ASHRAE RP-1651 & Building Energy Research Papers")
         
         np.random.seed(42)
@@ -104,7 +104,7 @@ class RealDatasetDownloader:
                     # Weekend effect (from campus studies)
                     weekend_effect = building['weekend_factor'] if is_weekend else 1.0
                     
-                    # Temperature effect (3% per °C above 22°C - from engineering standards)
+                    # Temperature effect (3% per C above 22C - from engineering standards)
                     temp = 20 + 15 * np.sin(2 * np.pi * (day_of_year - 105) / 365)
                     temp_effect = 1.0 + max(0, (temp - 22) * 0.03)
                     
@@ -145,13 +145,13 @@ class RealDatasetDownloader:
         file_path = os.path.join(self.data_dir, "research_based_campus_energy.csv")
         df.to_csv(file_path, index=False)
         
-        print(f"✅ Created research-based dataset: {file_path}")
-        print(f"📊 Dataset Statistics:")
-        print(f"   • Total records: {len(df):,}")
-        print(f"   • Buildings: {len(building_types)} types")
-        print(f"   • Date range: {df['timestamp'].min().date()} to {df['timestamp'].max().date()}")
-        print(f"   • Average energy: {df['energy_kwh'].mean():.1f} kWh")
-        print(f"   • File size: {os.path.getsize(file_path) / (1024*1024):.2f} MB")
+        print(f" Created research-based dataset: {file_path}")
+        print(f" Dataset Statistics:")
+        print(f"    Total records: {len(df):,}")
+        print(f"    Buildings: {len(building_types)} types")
+        print(f"    Date range: {df['timestamp'].min().date()} to {df['timestamp'].max().date()}")
+        print(f"    Average energy: {df['energy_kwh'].mean():.1f} kWh")
+        print(f"    File size: {os.path.getsize(file_path) / (1024*1024):.2f} MB")
         
         # Add research citations
         self._add_research_citations()
@@ -172,7 +172,7 @@ class RealDatasetDownloader:
                 "study": "Building Data Genome Project 2.0",
                 "title": "An open, extensible database for building energy analysis",
                 "year": 2020,
-                "key_finding": "Temperature sensitivity ranges from 2-4% per °C above setpoint",
+                "key_finding": "Temperature sensitivity ranges from 2-4% per C above setpoint",
                 "source": "Nature Scientific Data, Article 320"
             },
             {
@@ -186,7 +186,7 @@ class RealDatasetDownloader:
                 "study": "HVAC Engineering Standards",
                 "title": "ASHRAE Standard 90.1-2022",
                 "year": 2022,
-                "key_finding": "Optimal temperature setpoints: 24°C cooling, 20°C heating",
+                "key_finding": "Optimal temperature setpoints: 24C cooling, 20C heating",
                 "source": "American Society of Heating, Refrigerating and Air-Conditioning Engineers"
             },
             {
@@ -202,12 +202,12 @@ class RealDatasetDownloader:
         citations_path = os.path.join(self.data_dir, "research_citations.csv")
         citations_df.to_csv(citations_path, index=False)
         
-        print(f"📚 Added research citations: {citations_path}")
+        print(f" Added research citations: {citations_path}")
     
     def download_all_datasets(self):
         """Download all available datasets"""
         print("=" * 70)
-        print("📊 REAL ENERGY DATASET COLLECTION")
+        print(" REAL ENERGY DATASET COLLECTION")
         print("=" * 70)
         
         datasets = {}
@@ -229,7 +229,7 @@ class RealDatasetDownloader:
         datasets['openei'] = openei_data
         
         print("\n" + "=" * 70)
-        print("✅ DATASET COLLECTION COMPLETE")
+        print(" DATASET COLLECTION COMPLETE")
         print("=" * 70)
         
         total_records = sum(len(df) for df in datasets.values())

@@ -19,31 +19,31 @@ def run_faculty_demo(use_real_data=True, quick_demo=False):
     """Run appropriate demo based on requirements"""
     
     print("=" * 80)
-    print("🎓 FACULTY DEMONSTRATION: SMART CAMPUS ENERGY OPTIMIZER")
+    print(" FACULTY DEMONSTRATION: SMART CAMPUS ENERGY OPTIMIZER")
     print("=" * 80)
     
     if quick_demo:
-        print("\n⚡ MODE: QUICK DEMO (5 minutes)")
+        print("\n MODE: QUICK DEMO (5 minutes)")
         print("-" * 70)
         
         # Use synthetic data for quick demo
         generator = SyntheticDataGenerator()
         df = generator.generate_quick_demo_data(days=7)
         
-        print("\n📊 QUICK ANALYSIS:")
-        print(f"   • Dataset: Synthetic Demo Data")
-        print(f"   • Purpose: Show basic functionality")
-        print(f"   • Records: {len(df):,}")
-        print(f"   • Perfect for: 5-minute presentation")
+        print("\n QUICK ANALYSIS:")
+        print(f"    Dataset: Synthetic Demo Data")
+        print(f"    Purpose: Show basic functionality")
+        print(f"    Records: {len(df):,}")
+        print(f"    Perfect for: 5-minute presentation")
         
         # Simple analysis
         avg_energy = df['energy_kwh'].mean()
         optimization = calculate_optimization_potential(avg_energy)
         
-        print(f"\n💡 QUICK INSIGHTS:")
-        print(f"   • Average Energy: {avg_energy:.1f} kWh")
-        print(f"   • Potential Savings: {optimization['savings_percentage']:.1f}%")
-        print(f"   • Daily Savings: ₹{optimization['financial']['daily']:.2f}")
+        print(f"\n QUICK INSIGHTS:")
+        print(f"    Average Energy: {avg_energy:.1f} kWh")
+        print(f"    Potential Savings: {optimization['savings_percentage']:.1f}%")
+        print(f"    Daily Savings: {optimization['financial']['daily']:.2f}")
         
         return {
             'mode': 'quick_demo',
@@ -53,11 +53,11 @@ def run_faculty_demo(use_real_data=True, quick_demo=False):
         }
     
     else:
-        print("\n🔬 MODE: RESEARCH PRESENTATION (15-20 minutes)")
+        print("\n MODE: RESEARCH PRESENTATION (15-20 minutes)")
         print("-" * 70)
         
         if use_real_data:
-            print("📚 Using Research-Based Datasets...")
+            print(" Using Research-Based Datasets...")
             
             try:
                 # Try to download real data
@@ -66,7 +66,7 @@ def run_faculty_demo(use_real_data=True, quick_demo=False):
                 df = datasets.get('research')
                 
                 if df is None:
-                    print("⚠️ Real dataset failed, using synthetic fallback")
+                    print(" Real dataset failed, using synthetic fallback")
                     generator = SyntheticDataGenerator()
                     df = generator.generate_quick_demo_data(days=90)
                     data_source = "synthetic_fallback"
@@ -74,23 +74,23 @@ def run_faculty_demo(use_real_data=True, quick_demo=False):
                     data_source = "research_dataset"
                     
             except Exception as e:
-                print(f"⚠️ Error with real data: {e}")
+                print(f" Error with real data: {e}")
                 print("Using synthetic data for demo...")
                 generator = SyntheticDataGenerator()
                 df = generator.generate_quick_demo_data(days=90)
                 data_source = "synthetic_due_to_error"
         
         else:
-            print("🎯 Using Enhanced Synthetic Data...")
+            print(" Using Enhanced Synthetic Data...")
             generator = SyntheticDataGenerator()
             df = generator.generate_test_dataset()
             data_source = "enhanced_synthetic"
         
         # Perform comprehensive analysis
-        print(f"\n📊 COMPREHENSIVE ANALYSIS:")
-        print(f"   • Data Source: {data_source}")
-        print(f"   • Records: {len(df):,}")
-        print(f"   • Time Period: {df['timestamp'].min().date()} to {df['timestamp'].max().date()}")
+        print(f"\n COMPREHENSIVE ANALYSIS:")
+        print(f"    Data Source: {data_source}")
+        print(f"    Records: {len(df):,}")
+        print(f"    Time Period: {df['timestamp'].min().date()} to {df['timestamp'].max().date()}")
         
         # Detailed statistics
         stats = {
@@ -101,18 +101,18 @@ def run_faculty_demo(use_real_data=True, quick_demo=False):
             'peak_hour': df.groupby('hour')['energy_kwh'].mean().idxmax()
         }
         
-        print(f"   • Mean Consumption: {stats['mean']:.1f} kWh")
-        print(f"   • Peak Hour: {stats['peak_hour']}:00")
+        print(f"    Mean Consumption: {stats['mean']:.1f} kWh")
+        print(f"    Peak Hour: {stats['peak_hour']}:00")
         
         # Research-based optimization
-        print(f"\n🎯 RESEARCH-BASED OPTIMIZATION:")
+        print(f"\n RESEARCH-BASED OPTIMIZATION:")
         
         if data_source == "research_dataset":
-            print("   • Based on ASHRAE Research Papers")
-            print("   • Validated with academic studies")
+            print("    Based on ASHRAE Research Papers")
+            print("    Validated with academic studies")
             optimization_percent = 0.20  # 20% from research
         else:
-            print("   • Based on industry standards")
+            print("    Based on industry standards")
             optimization_percent = 0.15  # 15% standard
         
         # Calculate for Library building
@@ -127,11 +127,11 @@ def run_faculty_demo(use_real_data=True, quick_demo=False):
         
         optimization = calculate_optimization_potential(library_avg, optimization_percent)
         
-        print(f"   • Optimization Potential: {optimization['savings_percentage']:.1f}%")
-        print(f"   • Daily Energy Saved: {optimization['energy_saved']:.1f} kWh")
-        print(f"   • Daily Cost Savings: ₹{optimization['financial']['daily']:.2f}")
-        print(f"   • Annual Savings: ₹{optimization['financial']['annual']:,.0f}")
-        print(f"   • CO₂ Reduction: {optimization['environmental']['annual_co2']:,.0f} kg/year")
+        print(f"    Optimization Potential: {optimization['savings_percentage']:.1f}%")
+        print(f"    Daily Energy Saved: {optimization['energy_saved']:.1f} kWh")
+        print(f"    Daily Cost Savings: {optimization['financial']['daily']:.2f}")
+        print(f"    Annual Savings: {optimization['financial']['annual']:,.0f}")
+        print(f"    CO Reduction: {optimization['environmental']['annual_co2']:,.0f} kg/year")
         
         return {
             'mode': 'research_presentation',
@@ -144,7 +144,7 @@ def run_faculty_demo(use_real_data=True, quick_demo=False):
 def generate_faculty_report(results):
     """Generate report for faculty"""
     print("\n" + "=" * 80)
-    print("📋 FACULTY DEMONSTRATION REPORT")
+    print(" FACULTY DEMONSTRATION REPORT")
     print("=" * 80)
     
     report = {
@@ -178,21 +178,21 @@ def generate_faculty_report(results):
     with open('faculty_demo_report.json', 'w') as f:
         json.dump(report, f, indent=2)
     
-    print(f"\n📄 Report saved: faculty_demo_report.json")
+    print(f"\n Report saved: faculty_demo_report.json")
     
     # Print summary for faculty
-    print(f"\n🎯 DEMONSTRATION SUMMARY:")
-    print(f"   • Mode: {results['mode'].replace('_', ' ').title()}")
-    print(f"   • Data: {results['data_source'].replace('_', ' ').title()}")
-    print(f"   • Records Analyzed: {results['records']:,}")
+    print(f"\n DEMONSTRATION SUMMARY:")
+    print(f"    Mode: {results['mode'].replace('_', ' ').title()}")
+    print(f"    Data: {results['data_source'].replace('_', ' ').title()}")
+    print(f"    Records Analyzed: {results['records']:,}")
     
     if 'optimization' in results:
         opt = results['optimization']
-        print(f"   • Savings Potential: {opt['savings_percentage']:.1f}%")
-        print(f"   • Annual Financial Impact: ₹{opt['financial']['annual']:,.0f}")
-        print(f"   • Annual Environmental Impact: {opt['environmental']['annual_co2']:,.0f} kg CO₂ reduced")
+        print(f"    Savings Potential: {opt['savings_percentage']:.1f}%")
+        print(f"    Annual Financial Impact: {opt['financial']['annual']:,.0f}")
+        print(f"    Annual Environmental Impact: {opt['environmental']['annual_co2']:,.0f} kg CO reduced")
     
-    print(f"\n✅ READY FOR FACULTY REVIEW")
+    print(f"\n READY FOR FACULTY REVIEW")
 
 # ==================== MAIN EXECUTION ====================
 if __name__ == "__main__":
@@ -217,7 +217,7 @@ if __name__ == "__main__":
         use_real = False
     else:
         # Default: ask user
-        print("\n🎮 SELECT DEMONSTRATION MODE:")
+        print("\n SELECT DEMONSTRATION MODE:")
         print("   1. Quick Demo (5 minutes)")
         print("   2. Research Presentation (15-20 minutes with real data)")
         print("   3. Research Presentation (15-20 minutes with synthetic data)")
@@ -244,5 +244,5 @@ if __name__ == "__main__":
     generate_faculty_report(results)
     
     print("\n" + "=" * 80)
-    print("🎓 PROJECT STATUS: READY FOR FACULTY PRESENTATION")
+    print(" PROJECT STATUS: READY FOR FACULTY PRESENTATION")
     print("=" * 80)

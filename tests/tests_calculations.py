@@ -15,9 +15,9 @@ def test_calculate_optimization_potential():
     assert result['savings_percentage'] == 15.0
     
     # Financial calculations
-    assert result['financial']['daily'] == 15 * 8  # ₹8 per kWh
+    assert result['financial']['daily'] == 15 * 8  # 8 per kWh
     
-    print("✅ All calculation tests passed")
+    print(" All calculation tests passed")
 
 if __name__ == "__main__":
     test_calculate_optimization_potential()

@@ -13,7 +13,7 @@ class SimpleEnergyPredictor:
         
     def train(self, data):
         """Simulate training"""
-        print("🧠 Training simulated model...")
+        print(" Training simulated model...")
         self.trained = True
         return {"accuracy": 0.92, "loss": 0.08}
     

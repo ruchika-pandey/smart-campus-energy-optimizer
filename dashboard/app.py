@@ -11,12 +11,12 @@ import json
 # Page config
 st.set_page_config(
     page_title="Smart Campus Energy Optimizer",
-    page_icon="⚡",
+    page_icon="",
     layout="wide"
 )
 
 # Title
-st.title("⚡ Smart Campus Energy Optimizer")
+st.title(" Smart Campus Energy Optimizer")
 st.markdown("### Real Dataset Analysis Dashboard")
 
 # ==================== LOAD REAL DATASETS ====================
@@ -38,17 +38,17 @@ def load_real_datasets():
             try:
                 df = pd.read_csv(path)
                 datasets[name] = df
-                st.sidebar.success(f"✅ Loaded: {name}")
+                st.sidebar.success(f" Loaded: {name}")
             except Exception as e:
-                st.sidebar.warning(f"⚠️ Error loading {name}: {e}")
+                st.sidebar.warning(f" Error loading {name}: {e}")
         else:
-            st.sidebar.error(f"❌ Not found: {name}")
+            st.sidebar.error(f" Not found: {name}")
     
     return datasets
 
 # ==================== SIDEBAR ====================
 with st.sidebar:
-    st.header("📊 Data Selection")
+    st.header(" Data Selection")
     
     # Load datasets
     with st.spinner("Loading real datasets..."):
@@ -89,15 +89,15 @@ with st.sidebar:
                 df = df[mask]
     
     st.markdown("---")
-    st.header("🎯 Analysis Type")
+    st.header(" Analysis Type")
     analysis_type = st.radio(
         "Select Analysis",
-        ["📈 Energy Patterns", "🏢 Building Comparison", "💰 Savings Analysis", "🌡️ Environmental Impact"]
+        [" Energy Patterns", " Building Comparison", " Savings Analysis", " Environmental Impact"]
     )
 
 # ==================== MAIN DASHBOARD ====================
 if not datasets:
-    st.error("❌ No datasets found in data/raw/ folder!")
+    st.error(" No datasets found in data/raw/ folder!")
     st.info("""
     Please ensure you have these files:
     - `research_based_campus_energy.csv`
@@ -108,7 +108,7 @@ if not datasets:
     """)
 else:
     # Show dataset preview
-    with st.expander("🔍 Dataset Preview", expanded=True):
+    with st.expander(" Dataset Preview", expanded=True):
         st.dataframe(df.head(10), use_container_width=True)
         
         col1, col2, col3 = st.columns(3)
@@ -121,8 +121,8 @@ else:
             st.metric("Numeric Features", len(numeric_cols))
     
     # ==================== ANALYSIS 1: ENERGY PATTERNS ====================
-    if analysis_type == "📈 Energy Patterns":
-        st.header("📈 Energy Consumption Patterns")
+    if analysis_type == " Energy Patterns":
+        st.header(" Energy Consumption Patterns")
         
         col1, col2 = st.columns(2)
         
@@ -139,7 +139,7 @@ else:
                     daily_pattern = df.groupby(hour_col)[energy_col].mean().reset_index()
                     
                     fig1 = px.line(daily_pattern, x=hour_col, y=energy_col, 
-                                  title="📅 Average Daily Energy Pattern",
+                                  title=" Average Daily Energy Pattern",
                                   markers=True)
                     fig1.update_layout(xaxis_title="Hour of Day", yaxis_title="Energy (kWh)")
                     st.plotly_chart(fig1, use_container_width=True)
@@ -150,7 +150,7 @@ else:
                     days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
                     
                     fig2 = px.bar(weekly_pattern, x='day_of_week', y=energy_col,
-                                 title="📆 Weekly Energy Pattern",
+                                 title=" Weekly Energy Pattern",
                                  labels={'day_of_week': 'Day', energy_col: 'Energy (kWh)'})
                     fig2.update_xaxes(ticktext=days, tickvals=list(range(7)))
                     st.plotly_chart(fig2, use_container_width=True)
@@ -159,13 +159,13 @@ else:
             # Histogram of energy consumption
             if energy_cols:
                 fig3 = px.histogram(df, x=energy_cols[0], 
-                                   title="📊 Energy Distribution",
+                                   title=" Energy Distribution",
                                    nbins=50)
                 fig3.update_layout(xaxis_title="Energy (kWh)", yaxis_title="Frequency")
                 st.plotly_chart(fig3, use_container_width=True)
                 
                 # Statistics
-                st.subheader("📊 Statistics")
+                st.subheader(" Statistics")
                 stats_df = pd.DataFrame({
                     'Metric': ['Mean', 'Std Dev', 'Min', 'Max', '25%', '75%'],
                     'Value': [
@@ -180,8 +180,8 @@ else:
                 st.dataframe(stats_df, use_container_width=True, hide_index=True)
     
     # ==================== ANALYSIS 2: BUILDING COMPARISON ====================
-    elif analysis_type == "🏢 Building Comparison":
-        st.header("🏢 Building Energy Comparison")
+    elif analysis_type == " Building Comparison":
+        st.header(" Building Energy Comparison")
         
         # Find building column
         building_cols = [col for col in df.columns if 'building' in col.lower() or 'site' in col.lower()]
@@ -201,31 +201,31 @@ else:
                 # Bar chart
                 fig1 = px.bar(building_stats.reset_index(), 
                             x=building_col, y='mean',
-                            title="🏢 Average Energy by Building",
+                            title=" Average Energy by Building",
                             error_y='std')
                 fig1.update_layout(xaxis_title="Building", yaxis_title="Average Energy (kWh)")
                 st.plotly_chart(fig1, use_container_width=True)
             
             with col2:
                 # Display statistics
-                st.subheader("📊 Building Statistics")
+                st.subheader(" Building Statistics")
                 st.dataframe(building_stats.head(10), use_container_width=True)
                 
                 # Calculate optimization potential
-                st.subheader("🎯 Optimization Potential")
+                st.subheader(" Optimization Potential")
                 avg_energy = df[energy_col].mean()
                 potential_savings = avg_energy * 0.15  # 15% savings
-                daily_cost_savings = potential_savings * 8  # ₹8 per kWh
+                daily_cost_savings = potential_savings * 8  # 8 per kWh
                 monthly_savings = daily_cost_savings * 30
                 
                 st.metric("Average Energy", f"{avg_energy:.1f} kWh")
                 st.metric("Potential Savings (15%)", f"{potential_savings:.1f} kWh/day")
-                st.metric("Cost Savings", f"₹{daily_cost_savings:.0f}/day")
-                st.metric("Monthly Impact", f"₹{monthly_savings:,.0f}")
+                st.metric("Cost Savings", f"{daily_cost_savings:.0f}/day")
+                st.metric("Monthly Impact", f"{monthly_savings:,.0f}")
     
     # ==================== ANALYSIS 3: SAVINGS ANALYSIS ====================
-    elif analysis_type == "💰 Savings Analysis":
-        st.header("💰 Cost & Savings Analysis")
+    elif analysis_type == " Savings Analysis":
+        st.header(" Cost & Savings Analysis")
         
         # Calculate savings based on real data
         energy_cols = [col for col in df.columns if 'energy' in col.lower() or 'kwh' in col.lower()]
@@ -242,13 +242,13 @@ else:
             energy_saved = current_daily - optimized_daily
             
             # Financial calculations
-            electricity_rate = st.number_input("Electricity Rate (₹/kWh)", 5.0, 15.0, 8.0, 0.5)
+            electricity_rate = st.number_input("Electricity Rate (/kWh)", 5.0, 15.0, 8.0, 0.5)
             daily_cost_saved = energy_saved * electricity_rate
             monthly_cost_saved = daily_cost_saved * 30
             annual_cost_saved = daily_cost_saved * 365
             
-            # CO₂ calculations
-            co2_per_kwh = st.number_input("CO₂ per kWh (kg)", 0.5, 1.5, 0.82, 0.01)
+            # CO calculations
+            co2_per_kwh = st.number_input("CO per kWh (kg)", 0.5, 1.5, 0.82, 0.01)
             daily_co2_saved = energy_saved * co2_per_kwh
             annual_co2_saved = daily_co2_saved * 365
             trees_equivalent = annual_co2_saved / 20  # 1 tree absorbs 20 kg/year
@@ -264,16 +264,16 @@ else:
             with col3:
                 st.metric("Energy Saved", f"{energy_saved:.1f} kWh/day")
             with col4:
-                st.metric("Daily Savings", f"₹{daily_cost_saved:.0f}")
+                st.metric("Daily Savings", f"{daily_cost_saved:.0f}")
             
             # Detailed breakdown
-            st.subheader("📊 Detailed Impact Analysis")
+            st.subheader(" Detailed Impact Analysis")
             
             breakdown_data = {
                 'Period': ['Daily', 'Monthly', 'Annual'],
                 'Energy Saved (kWh)': [energy_saved, energy_saved*30, energy_saved*365],
-                'Cost Savings (₹)': [daily_cost_saved, monthly_cost_saved, annual_cost_saved],
-                'CO₂ Reduced (kg)': [daily_co2_saved, daily_co2_saved*30, annual_co2_saved]
+                'Cost Savings ()': [daily_cost_saved, monthly_cost_saved, annual_cost_saved],
+                'CO Reduced (kg)': [daily_co2_saved, daily_co2_saved*30, annual_co2_saved]
             }
             
             breakdown_df = pd.DataFrame(breakdown_data)
@@ -310,7 +310,7 @@ else:
     
     # ==================== ANALYSIS 4: ENVIRONMENTAL IMPACT ====================
     else:  # Environmental Impact
-        st.header("🌱 Environmental Impact Analysis")
+        st.header(" Environmental Impact Analysis")
         
         energy_cols = [col for col in df.columns if 'energy' in col.lower() or 'kwh' in col.lower()]
         
@@ -319,7 +319,7 @@ else:
             total_energy = df[energy_col].sum()
             
             # Environmental calculations
-            co2_per_kwh = 0.82  # kg CO₂ per kWh (India average)
+            co2_per_kwh = 0.82  # kg CO per kWh (India average)
             total_co2 = total_energy * co2_per_kwh
             
             # Equivalent metrics
@@ -332,26 +332,26 @@ else:
             with col1:
                 st.metric("Total Energy", f"{total_energy:,.0f} kWh")
             with col2:
-                st.metric("CO₂ Emissions", f"{total_co2:,.0f} kg")
+                st.metric("CO Emissions", f"{total_co2:,.0f} kg")
             with col3:
                 st.metric("Trees Needed", f"{trees_needed:.0f} trees")
             with col4:
                 st.metric("Car Equivalents", f"{cars_equivalent:.1f} cars/year")
             
             # Environmental visualization
-            st.subheader("🌍 Carbon Footprint Analysis")
+            st.subheader(" Carbon Footprint Analysis")
             
             env_data = {
                 'Source': ['Current Campus', 'With 15% Optimization'],
-                'CO₂ Emissions (tons)': [total_co2/1000, total_co2*0.85/1000],
+                'CO Emissions (tons)': [total_co2/1000, total_co2*0.85/1000],
                 'Energy (MWh)': [total_energy/1000, total_energy*0.85/1000]
             }
             
             env_df = pd.DataFrame(env_data)
             
-            fig = px.bar(env_df, x='Source', y='CO₂ Emissions (tons)',
+            fig = px.bar(env_df, x='Source', y='CO Emissions (tons)',
                         title='Carbon Emissions Comparison',
-                        text='CO₂ Emissions (tons)')
+                        text='CO Emissions (tons)')
             fig.update_traces(texttemplate='%{text:.1f} tons', textposition='outside')
             
             st.plotly_chart(fig, use_container_width=True)
@@ -359,10 +359,10 @@ else:
             # Show research citations
             citations_path = "data/raw/research_citations.csv"
             if os.path.exists(citations_path):
-                st.subheader("📚 Research Basis")
+                st.subheader(" Research Basis")
                 citations = pd.read_csv(citations_path)
                 for _, row in citations.iterrows():
-                    with st.expander(f"📄 {row['study']} ({row['year']})"):
+                    with st.expander(f" {row['study']} ({row['year']})"):
                         st.write(f"**Finding:** {row['key_finding']}")
                         st.write(f"**Source:** {row['source']}")
 
@@ -370,11 +370,11 @@ else:
 st.markdown("---")
 footer_cols = st.columns([3, 1, 1])
 with footer_cols[0]:
-    st.caption("📊 **Real Dataset Analysis Dashboard** | Data Source: Your Downloaded Datasets")
+    st.caption(" **Real Dataset Analysis Dashboard** | Data Source: Your Downloaded Datasets")
 with footer_cols[1]:
-    st.caption(f"📅 {datetime.now().strftime('%Y-%m-%d')}")
+    st.caption(f" {datetime.now().strftime('%Y-%m-%d')}")
 with footer_cols[2]:
-    st.caption("🔬 Research Project")
+    st.caption(" Research Project")
 
 # Add CSS for better appearance
 st.markdown("""

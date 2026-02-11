@@ -13,7 +13,7 @@ class SyntheticDataGenerator:
     
     def generate_quick_demo_data(self, days=7):
         """Generate quick demo data for presentations"""
-        print("⚡ Generating quick demo data...")
+        print(" Generating quick demo data...")
         
         np.random.seed(42)
         data = []
@@ -48,15 +48,15 @@ class SyntheticDataGenerator:
         file_path = os.path.join(self.data_dir, "quick_demo_data.csv")
         df.to_csv(file_path, index=False)
         
-        print(f"✅ Quick demo data saved: {file_path}")
-        print(f"   • Records: {len(df):,}")
-        print(f"   • Days: {days}")
+        print(f" Quick demo data saved: {file_path}")
+        print(f"    Records: {len(df):,}")
+        print(f"    Days: {days}")
         
         return df
     
     def generate_test_dataset(self):
         """Generate test dataset for model validation"""
-        print("🧪 Generating test dataset...")
+        print(" Generating test dataset...")
         
         # Similar to research data but smaller
         return self.generate_quick_demo_data(days=30)

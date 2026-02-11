@@ -1,6 +1,6 @@
 # utils/calculations.py
 """
-Business Calculations: Cost, CO₂, Savings
+Business Calculations: Cost, CO, Savings
 """
 
 def calculate_financial_impact(energy_saved_kwh, electricity_rate=None):
@@ -21,7 +21,7 @@ def calculate_financial_impact(energy_saved_kwh, electricity_rate=None):
     }
 
 def calculate_environmental_impact(energy_saved_kwh):
-    """Calculate CO₂ reduction from energy savings"""
+    """Calculate CO reduction from energy savings"""
     from utils.config import BUSINESS_SETTINGS
     
     co2_saved = energy_saved_kwh * BUSINESS_SETTINGS['co2_per_kwh']

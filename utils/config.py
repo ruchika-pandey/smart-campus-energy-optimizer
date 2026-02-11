@@ -23,9 +23,9 @@ MODEL_SETTINGS = {
 
 # Business Settings
 BUSINESS_SETTINGS = {
-    'electricity_rate': 8.0,         # ₹ per kWh
-    'co2_per_kwh': 0.82,             # kg CO₂ per kWh
-    'tree_co2_absorption': 20,       # kg CO₂ per tree per year
+    'electricity_rate': 8.0,         #  per kWh
+    'co2_per_kwh': 0.82,             # kg CO per kWh
+    'tree_co2_absorption': 20,       # kg CO per tree per year
     'working_days_per_month': 30,
     'working_days_per_year': 365,
 }
