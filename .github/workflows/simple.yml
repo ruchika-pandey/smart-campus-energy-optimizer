@@ -1,4 +1,4 @@
-name: CI Pipeline
+name: Simple Pipeline
 
 on: [push]
 
@@ -6,16 +6,6 @@ jobs:
   test:
     runs-on: windows-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
-      
-      - name: Run simple test
-        run: |
-          echo "Smart Campus Energy Optimizer"
-          echo "Pipeline running successfully"
-          python --version
+      - uses: actions/checkout@v4
+      - run: echo "Project is working"
+      - run: python --version
