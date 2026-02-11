@@ -51,11 +51,11 @@ jobs:
             json.dump(report, f, indent=2)
         "
     
-    - name: Upload data report
-      uses: actions/upload-artifact@v3
+    - name: Upload model artifacts
+      uses: actions/upload-artifact@v4
       with:
-        name: windows-data-quality-report
-        path: data_quality_report.json
+        name: windows-model-artifacts
+        path: model_metrics.json
 
   model-training:
     needs: data-validation
@@ -107,11 +107,11 @@ jobs:
             json.dump(metrics, f, indent=2)
         "
     
-    - name: Upload model artifacts
-      uses: actions/upload-artifact@v3
+    - name: Upload data report
+      uses: actions/upload-artifact@v4
       with:
-        name: windows-model-artifacts
-        path: model_metrics.json
+        name: windows-data-quality-report
+        path: data_quality_report.json
 
   deployment:
     needs: model-training

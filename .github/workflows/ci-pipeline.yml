@@ -79,7 +79,7 @@ jobs:
         echo "✅ Build successful" >> BUILD_REPORT.md
     
     - name: Upload build artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: windows-build-report
         path: BUILD_REPORT.md
