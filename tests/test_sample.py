@@ -9,10 +9,10 @@ def test_imports():
     """Test if all modules import correctly"""
     try:
         from utils.calculations import calculate_optimization_potential
-        print("✅ Calculations module imported")
+        print("✓ Calculations module imported")
         return True
     except Exception as e:
-        print(f"❌ Import failed: {e}")
+        print(f"✗ Import failed: {e}")
         return False
 
 def test_calculations():
@@ -22,20 +22,20 @@ def test_calculations():
         result = calculate_optimization_potential(100)
         assert result['energy_saved'] == 15
         assert result['savings_percentage'] == 15.0
-        print("✅ Calculations test passed")
+        print("✓ Calculations test passed")
         return True
     except Exception as e:
-        print(f"❌ Calculations test failed: {e}")
+        print(f"✗ Calculations test failed: {e}")
         return False
 
 def test_dummy():
     """Simple test that always passes"""
     assert 1 + 1 == 2
-    print("✅ Dummy test passed")
+    print("✓ Dummy test passed")
 
 if __name__ == "__main__":
-    print("🧪 Running tests...")
+    print("Running tests...")
     test_imports()
     test_calculations()
     test_dummy()
-    print("✅ All tests completed")
+    print("✓ All tests completed")
