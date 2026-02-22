@@ -1,0 +1,50 @@
+name: Drift Detection
+
+on:
+  schedule:
+    - cron: '0 0 * * 0'   # Every Sunday at midnight UTC
+  workflow_dispatch:        # Allows manual trigger
+
+jobs:
+  detect-drift:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'   # Avoid Python 3.14 issues
+
+      - name: Install dependencies
+        run: |
+          pip install pandas numpy scikit-learn mlflow
+          # Optionally install evidently (will fallback anyway)
+          pip install evidently || true
+
+      - name: Run drift detection
+        run: python mlops/drift_detection.py
+        env:
+          MLFLOW_TRACKING_URI: ${{ secrets.MLFLOW_TRACKING_URI }}  # optional, for remote MLflow
+
+      - name: Upload drift report
+        uses: actions/upload-artifact@v4
+        with:
+          name: drift-report
+          path: drift_report.json
+
+      - name: Create issue if drift detected
+        if: failure()   # This step runs only if previous step failed (i.e., drift detected)
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const report = JSON.parse(fs.readFileSync('drift_report.json'));
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: '🚨 Drift Detected in Energy Model',
+              body: 'Drift was detected in the latest data. Check the drift report artifact for details.\n\n' +
+                    '```json\n' + JSON.stringify(report.last_check, null, 2) + '\n```'
+            });
