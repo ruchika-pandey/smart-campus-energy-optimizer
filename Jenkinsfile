@@ -2,16 +2,17 @@ pipeline {
     agent any
 
     environment {
-    PYTHON = 'C:\\Users\\Ruchika\\AppData\\Local\\Programs\\Python\\Python314\\python.exe'
-    PIP = 'C:\\Users\\Ruchika\\AppData\\Local\\Programs\\Python\\Python314\\Scripts\\pip.exe'
-}
-    stage('Clean Workspace') {
-    steps {
-        cleanWs()  // deletes the workspace before checkout
+        PYTHON = 'C:\\Users\\Ruchika\\AppData\\Local\\Programs\\Python\\Python314\\python.exe'
+        PIP = 'C:\\Users\\Ruchika\\AppData\\Local\\Programs\\Python\\Python314\\Scripts\\pip.exe'
     }
-}
 
     stages {
+        stage('Clean Workspace') {
+            steps {
+                cleanWs()  // deletes the workspace before checkout
+            }
+        }
+
         stage('Checkout') {
             steps {
                 echo '📥 Pulling code from GitHub...'
@@ -22,7 +23,6 @@ pipeline {
         stage('Setup Python Environment') {
             steps {
                 echo '🐍 Installing dependencies...'
-                // Use PowerShell to run commands
                 powershell """
                     & ${env.PYTHON} --version
                     & ${env.PIP} install --upgrade pip
@@ -36,17 +36,18 @@ pipeline {
             steps {
                 echo '🧪 Running unit tests...'
                 powershell """
-                    # Run pytest and capture results (continue even if tests fail)
                     & ${env.PYTHON} -m pytest tests/ -v --tb=short --junitxml=test-results.xml
                 """
             }
         }
-    stage('Debug - List Files') {
-    steps {
-        echo '📂 Listing workspace contents...'
-        powershell 'Get-ChildItem -Recurse -Path .'
-    }
-}
+
+        stage('Debug - List Files') {
+            steps {
+                echo '📂 Listing workspace contents...'
+                powershell 'Get-ChildItem -Recurse -Path .'
+            }
+        }
+
         stage('Check Model Drift') {
             steps {
                 echo '📊 Checking for drift...'
@@ -57,14 +58,13 @@ pipeline {
         }
 
         stage('Archive Artifacts') {
-    steps {
-        echo '💾 Saving reports...'
-        junit 'test-results.xml'
-        archiveArtifacts artifacts: 'drift_report.json', fingerprint: true
-        // Remove or comment out the line below
-        // archiveArtifacts artifacts: 'model_metrics.json', fingerprint: true
-    }
-}
+            steps {
+                echo '💾 Saving reports...'
+                junit 'test-results.xml'
+                archiveArtifacts artifacts: 'drift_report.json', fingerprint: true
+                // archiveArtifacts artifacts: 'model_metrics.json', fingerprint: true (commented out)
+            }
+        }
     }
 
     post {
