@@ -36,7 +36,12 @@ pipeline {
                 """
             }
         }
-
+    stage('Debug - List Files') {
+    steps {
+        echo '📂 Listing workspace contents...'
+        powershell 'Get-ChildItem -Recurse -Path .'
+    }
+}
         stage('Check Model Drift') {
             steps {
                 echo '📊 Checking for drift...'
