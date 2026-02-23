@@ -5,6 +5,11 @@ pipeline {
     PYTHON = 'C:\\Users\\Ruchika\\AppData\\Local\\Programs\\Python\\Python314\\python.exe'
     PIP = 'C:\\Users\\Ruchika\\AppData\\Local\\Programs\\Python\\Python314\\Scripts\\pip.exe'
 }
+    stage('Clean Workspace') {
+    steps {
+        cleanWs()  // deletes the workspace before checkout
+    }
+}
 
     stages {
         stage('Checkout') {
@@ -52,16 +57,14 @@ pipeline {
         }
 
         stage('Archive Artifacts') {
-            steps {
-                echo '💾 Saving reports...'
-                // Archive test results
-                junit 'test-results.xml'
-                // Archive drift report
-                archiveArtifacts artifacts: 'drift_report.json', fingerprint: true
-                // Archive any model metrics
-                archiveArtifacts artifacts: 'model_metrics.json', fingerprint: true
-            }
-        }
+    steps {
+        echo '💾 Saving reports...'
+        junit 'test-results.xml'
+        archiveArtifacts artifacts: 'drift_report.json', fingerprint: true
+        // Remove or comment out the line below
+        // archiveArtifacts artifacts: 'model_metrics.json', fingerprint: true
+    }
+}
     }
 
     post {
