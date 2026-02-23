@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         PYTHON = 'C:\Users\Ruchika\AppData\Local\Programs\Python\Python314\python.exe'
-        PIP = 'C:\Users\Ruchika\AppData\Local\Programs\Python\Python314\python.exe'
+        PIP = 'C:\Users\Ruchika\AppData\Local\Programs\Python\Python314\Scripts\pip.exe'
     }
 
     stages {
