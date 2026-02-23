@@ -12,7 +12,7 @@ class DriftDetector:
     def load_reference_data(self, path='data/reference/reference_data.csv'):
         if os.path.exists(path):
             self.reference_data = pd.read_csv(path)
-            print(f"✅ Reference data loaded: {len(self.reference_data)} samples")
+            print(f"[OK] Reference data loaded: {len(self.reference_data)} samples")
         else:
             # Create synthetic reference data
             np.random.seed(42)
@@ -26,14 +26,14 @@ class DriftDetector:
             self.reference_data = df
             os.makedirs('data/reference', exist_ok=True)
             self.reference_data.to_csv(path, index=False)
-            print(f"✅ Reference data created and saved to {path}")
+            print(f"[OK] Reference data created and saved to {path}")
 
     def load_current_data(self, path='data/raw/research_based_campus_energy.csv'):
         """Load current data, create synthetic if missing"""
         if os.path.exists(path):
             return pd.read_csv(path)
         else:
-            print(f"⚠️ Data file {path} not found. Using synthetic data.")
+            print(f"[WARN] Data file {path} not found. Using synthetic data.")
             np.random.seed(43)  # Different seed for variation
             n = 500
             return pd.DataFrame({
@@ -77,9 +77,9 @@ class DriftDetector:
         with open(output_path, 'w') as f:
             json.dump(result, f, indent=2)
         if result['drift_detected']:
-            print("🚨 Drift detected! Consider retraining.")
+            print("[DRIFT] Drift detected! Consider retraining.")
         else:
-            print("✅ No significant drift detected.")
+            print("[OK] No significant drift detected.")
         return result
 
 if __name__ == "__main__":
