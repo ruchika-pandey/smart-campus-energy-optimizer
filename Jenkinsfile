@@ -2,10 +2,8 @@ pipeline {
     agent any
 
     environment {
-        // Use PowerShell for all commands (bat also works, but PowerShell handles paths better)
-        // You can adjust Python paths if needed
-        PYTHON = 'python'
-        PIP = 'pip'
+        PYTHON = 'C:\Users\Ruchika\AppData\Local\Programs\Python\Python314\python.exe'
+        PIP = 'C:\Users\Ruchika\AppData\Local\Programs\Python\Python314\python.exe'
     }
 
     stages {
