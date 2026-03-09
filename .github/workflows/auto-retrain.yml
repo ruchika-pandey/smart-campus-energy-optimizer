@@ -24,7 +24,6 @@ jobs:
 
       - name: Run auto-retraining
         run: python models/auto_retrain.py
-        # No env needed for file-based tracking
 
       - name: Upload MLflow runs
         uses: actions/upload-artifact@v4
