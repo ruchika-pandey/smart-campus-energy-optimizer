@@ -19,9 +19,9 @@ def load_training_data():
     data_path = "data/raw/research_based_campus_energy.csv"
     if os.path.exists(data_path):
         df = pd.read_csv(data_path)
-        print(f"✅ Loaded real data: {len(df)} rows")
+        print(f"[SUCCESS] Loaded real data: {len(df)} rows")
     else:
-        print("⚠️ Real data not found, generating synthetic data...")
+        print("[WARNING] Real data not found, generating synthetic data...")
         np.random.seed(42)
         n = 5000
         df = pd.DataFrame({
@@ -59,7 +59,7 @@ def train_and_log():
         mlflow.log_metric("mae", mae)
         mlflow.sklearn.log_model(model, "model")
         run_id = mlflow.active_run().info.run_id
-        print(f"✅ Run logged (ID: {run_id}) with MAE = {mae:.2f}")
+        print(f"[SUCCESS] Run logged (ID: {run_id}) with MAE = {mae:.2f}")
 
 if __name__ == "__main__":
     train_and_log()
