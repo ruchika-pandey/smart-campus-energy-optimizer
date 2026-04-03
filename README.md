@@ -1,4 +1,4 @@
-# ⚡ Smart Campus Energy Optimizer
+#  Smart Campus Energy Optimizer
 
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue)](https://www.python.org/)
 [![MLflow](https://img.shields.io/badge/MLflow-3.9.0-orange)](https://mlflow.org/)
@@ -6,21 +6,21 @@
 [![Streamlit](https://img.shields.io/badge/Streamlit-1.36.0-red)](https://streamlit.io/)
 
 
-## 📌 Project Overview
+##  Project Overview
 
 The **Smart Campus Energy Optimizer** is an AI-powered MLOps system that predicts campus energy consumption and provides optimization recommendations to reduce electricity bills and carbon emissions by **15-20%**.
 
 ### Key Features
-- ✅ Real-time energy consumption predictions
-- ✅ AI-driven optimization recommendations
-- ✅ Cost and CO₂ savings calculations
-- ✅ Interactive dashboard for facility managers
-- ✅ Auto-retraining pipeline (weekly)
-- ✅ Drift detection for model monitoring
-- ✅ Containerized deployment with Docker
-- ✅ CI/CD with GitHub Actions & Jenkins
+-  Real-time energy consumption predictions
+-  AI-driven optimization recommendations
+-  Cost and CO₂ savings calculations
+-  Interactive dashboard for facility managers
+-  Auto-retraining pipeline (weekly)
+-  Drift detection for model monitoring
+-  Containerized deployment with Docker
+-  CI/CD with GitHub Actions & Jenkins
 
-## 📊 Problem Statement
+##  Problem Statement
 
 Campuses waste massive amounts of energy:
 - ACs running in empty classrooms
@@ -32,7 +32,7 @@ Campuses waste massive amounts of energy:
 - 50-100 tons CO₂ emissions per year
 - No predictive capabilities for energy management
 
-## 🏗️ Architecture
+##  Architecture
 **Data Layer → Model Layer → MLOps Layer → Dashboard**
 
 | Layer | Components |
@@ -42,7 +42,7 @@ Campuses waste massive amounts of energy:
 | **MLOps Layer** | MLflow, GitHub Actions, Jenkins, Docker |
 | **Dashboard** | Streamlit (Live Predictions, Cost Savings, CO₂ Reduction) |
 
-## 🛠️ Tech Stack
+##  Tech Stack
 
 | Category | Technologies |
 |----------|--------------|
@@ -54,7 +54,7 @@ Campuses waste massive amounts of energy:
 | Containerization | Docker, Docker Compose |
 | Version Control | Git, GitHub |
 
-## 📊 Model Performance
+##  Model Performance
 
 | Metric | Value |
 |--------|-------|
@@ -65,7 +65,7 @@ Campuses waste massive amounts of energy:
 | Cost Savings | ₹15-20L/year |
 | CO₂ Reduction | 50-100 tons/year |
 
-## 🚀 Quick Start
+##  Quick Start
 
 ### With Docker (Recommended)
 
@@ -97,7 +97,7 @@ streamlit run dashboard/app.py
 # In another terminal, start MLflow
 mlflow ui
 
-## 📁 Project Structure
+##  Project Structure
 ```
 smart-campus-energy-optimizer/
 │
@@ -158,11 +158,12 @@ FastAPI	8000	Model serving API
 
 Streamlit	8501	User dashboard
 
-📈 Results
-✅ 15-20% energy reduction validated through simulation
+### Results
 
-✅ ₹15-20 lakhs annual savings for medium campus
+15-20% energy reduction validated through simulation
 
-✅ 50-100 tons CO₂ reduction per year
+₹15-20 lakhs annual savings for medium campus
 
-✅ <2 years payback period
+50-100 tons CO₂ reduction per year
+
+<2 years payback period
