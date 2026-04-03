@@ -33,25 +33,26 @@ Campuses waste massive amounts of energy:
 - No predictive capabilities for energy management
 
 ## 🏗️ Architecture
-┌─────────────────────────────────────────────────────────────────┐
-│ SMART CAMPUS ENERGY OPTIMIZER │
-├─────────────────────────────────────────────────────────────────┤
-│ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ │
-│ │ DATA LAYER │─▶│ MODEL LAYER │─▶│ MLOps LAYER │ │
-│ ├─────────────┤ ├─────────────┤ ├─────────────┤ │
-│ │ UCI Dataset │ │RandomForest │ │ MLflow │ │
-│ │ OpenEI Data │ │150 trees │ │ GitHub │ │
-│ │ Synthetic │ │max_depth=12 │ │ Jenkins │ │
-│ └─────────────┘ └─────────────┘ └─────────────┘ │
-│ │ │
-│ ▼ │
-│ ┌─────────────────┐ │
-│ │ STREAMLIT DASHBOARD │ │
-│ │ • Live Predictions │ │
-│ │ • Cost Savings │ │
-│ │ • CO₂ Reduction │ │
-│ └───────────────────────┘ │
-└─────────────────────────────────────────────────────────────────┘
++-----------------------------------------------------------+
+| SMART CAMPUS ENERGY OPTIMIZER |
++-----------------------------------------------------------+
+| |
+| +-------------+ +-------------+ +-------------+ |
+| | DATA LAYER |-->| MODEL LAYER |-->| MLOps LAYER | |
+| +-------------+ +-------------+ +-------------+ |
+| | UCI Dataset | |RandomForest | | MLflow | |
+| | OpenEI Data | |150 trees | | GitHub | |
+| | Synthetic | |max_depth=12 | | Jenkins | |
+| +-------------+ +-------------+ +-------------+ |
+| | |
+| v |
+| +-------------------+ |
+| | STREAMLIT DASHBOARD| |
+| | • Live Predictions | |
+| | • Cost Savings | |
+| | • CO₂ Reduction | |
+| +-------------------+ |
++-----------------------------------------------------------+
 
 ## 🛠️ Tech Stack
 
