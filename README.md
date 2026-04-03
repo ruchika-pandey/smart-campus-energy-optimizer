@@ -83,18 +83,18 @@ FastAPI docs: http://localhost:8000/docs
 MLflow UI: http://localhost:5000
 
 ### Without Docker
-bash
-# Create virtual environment
+
+Create virtual environment
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 
-# Install dependencies
+Install dependencies
 pip install -r requirements.txt
 
-# Run dashboard
+Run dashboard
 streamlit run dashboard/app.py
 
-# In another terminal, start MLflow
+In another terminal, start MLflow
 mlflow ui
 
 📁 Project Structure
@@ -138,18 +138,17 @@ smart-campus-energy-optimizer/
 ├── requirements.txt       # Python dependencies
 └── README.md              # This file
 
-🔄 CI/CD Pipeline
-GitHub Actions
+### CI/CD Pipeline
+
+# GitHub Actions
 CI Pipeline: Runs tests on every push
-
 Auto-retrain: Retrains model every Sunday at 2 AM
-
 Drift Detection: Monitors model performance weekly
 
-Jenkins Pipeline
+# Jenkins Pipeline
 Checkout → Setup Python → Run Tests → Check Drift → Archive Artifacts
 
-🐳 Docker Services
+### Docker Services
 Service	Port	Purpose
 MLflow	5000	Experiment tracking
 FastAPI	8000	Model serving API
