@@ -151,9 +151,11 @@ Drift Detection: Monitors model performance weekly
 Checkout → Setup Python → Run Tests → Check Drift → Archive Artifacts
 
 ### Docker Services
-Service	Port	Purpose
+
 MLflow	5000	Experiment tracking
+
 FastAPI	8000	Model serving API
+
 Streamlit	8501	User dashboard
 
 📈 Results
