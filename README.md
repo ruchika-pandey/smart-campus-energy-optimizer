@@ -97,32 +97,48 @@ streamlit run dashboard/app.py
 In another terminal, start MLflow
 mlflow ui
 
-📁 Project Structure
-Folders:
+## 📁 Project Structure
 
-.github/workflows/ - GitHub Actions CI/CD pipelines
+smart-campus-energy-optimizer/
+│
+├── .github/workflows/
+│   ├── auto-retrain.yml        # Weekly model retraining
+│   ├── drift-detection.yml     # Drift monitoring
+│   └── simple.yml              # Basic CI pipeline
+│
+├── api/
+│   ├── app.py                  # API endpoints
+│   ├── Dockerfile              # Container definition
+│   └── requirements.txt        # Dependencies
+│
+├── dashboard/
+│   ├── app.py                  # Main dashboard
+│   ├── Dockerfile              # Container definition
+│   └── requirements.txt        # Dependencies
+│
+├── mlops/
+│   ├── compare_models.py       # Model comparison
+│   ├── drift_detection.py      # Drift monitoring
+│   └── data_validation.py      # Data quality checks
+│
+├── models/
+│   ├── auto_retrain.py         # Scheduled retraining
+│   ├── benchmark.py            # Performance benchmarks
+│   └── train_model.py          # Training pipeline
+│
+├── tests/
+│   ├── test_sample.py          # Basic tests
+│   └── test_calculations.py    # Calculation tests
+│
+├── utils/
+│   ├── calculations.py         # Cost/CO₂ formulas
+│   └── config.py               # Configuration
+│
+├── docker-compose.yml          # Multi-container setup
+├── Jenkinsfile                 # Jenkins pipeline
+├── requirements.txt            # Python dependencies
+└── README.md                   # Documentation
 
-api/ - FastAPI service
-
-dashboard/ - Streamlit dashboard
-
-mlops/ - MLOps components
-
-models/ - ML models
-
-tests/ - Unit tests
-
-utils/ - Utilities
-
-Key Files:
-
-docker-compose.yml - Multi-container setup
-
-Jenkinsfile - Jenkins pipeline
-
-requirements.txt - Python dependencies
-
-README.md - This file
 
 ### CI/CD Pipeline
 
