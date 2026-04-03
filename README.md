@@ -231,5 +231,5 @@ flowchart TD
         E4[Inference Time: 0.12 ms]
     end
 
-    PHASE5 --> END([Project Complete ✅])
+    PHASE5 --> END([Project Complete])
 ```
