@@ -172,7 +172,7 @@ Streamlit	8501	User dashboard
 
 ```mermaid
 flowchart TD
-    START([Problem:Campus Engery Waste]) --> PHASE1
+    START([Campus Engery Waste]) --> PHASE1
 
     subgraph PHASE1 [PHASE 1: DATA COLLECTION]
         A1[UCI Appliances Dataset]
