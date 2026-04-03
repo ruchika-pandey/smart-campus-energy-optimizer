@@ -98,7 +98,7 @@ In another terminal, start MLflow
 mlflow ui
 
 ## 📁 Project Structure
-
+```
 smart-campus-energy-optimizer/
 │
 ├── .github/workflows/
@@ -138,7 +138,7 @@ smart-campus-energy-optimizer/
 ├── Jenkinsfile                 # Jenkins pipeline
 ├── requirements.txt            # Python dependencies
 └── README.md                   # Documentation
-
+```
 
 ### CI/CD Pipeline
 
