@@ -1,0 +1,23 @@
+name: Drift Detection
+
+on:
+  schedule:
+    - cron: '0 0 * * 0'   # Every Sunday at midnight
+  workflow_dispatch:
+
+jobs:
+  drift-check:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - run: pip install -r requirements.txt
+      - run: pip install evidently pandas numpy
+      - run: python mlops/drift_detection.py
+      - name: Upload drift report
+        uses: actions/upload-artifact@v4
+        with:
+          name: drift-report
+          path: drift_report.json

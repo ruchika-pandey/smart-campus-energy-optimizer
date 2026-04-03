@@ -1,19 +1,176 @@
-# dashboard/app.py - COMPLETE VERSION WITH LIVE PREDICTION
 import streamlit as st
 import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
 import plotly.express as px
-from datetime import datetime, timedelta
+from datetime import datetime
 import os
 import json
 import mlflow
 
-def load_drift_status():
-    """Load latest drift report and return warning message if drift detected."""
+PUMA_RED = "#e41e26"
+WHITE = "#ffffff"
+GRAY = "#888888"
+# ==================== PAGE CONFIGURATION ====================
+st.set_page_config(
+    page_title="⚡ Smart Campus Energy Optimizer",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+# ==================== CUSTOM CSS – DARK THEME ====================
+st.markdown("""
+<style>
+
+/* FONT */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+html, body, [class*="css"] {
+    font-family: 'Inter', sans-serif;
+}
+
+/* MAIN BACKGROUND */
+.stApp {
+    background-color: #000000;
+}
+
+/* SIDEBAR */
+[data-testid="stSidebar"] {
+    background-color: #0a0a0a;
+    border-right: 1px solid #1a1a1a;
+}
+
+/* HEADINGS */
+h1 {
+    color: #ffffff;
+    font-weight: 900;
+    font-size: 2.8rem;
+    letter-spacing: -1px;
+}
+
+h2 {
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 1.8rem;
+    border-bottom: 1px solid #222;
+    padding-bottom: 10px;
+}
+
+h3 {
+    color: #e0e0e0;
+    font-weight: 600;
+}
+
+/* TEXT */
+p, label, span {
+    color: #cfcfcf;
+}
+
+/* METRIC CARDS */
+div[data-testid="stMetric"] {
+    background: #0f0f0f;
+    border: 1px solid #1f1f1f;
+    border-radius: 16px;
+    padding: 24px;
+    transition: all 0.25s ease;
+}
+
+div[data-testid="stMetric"]:hover {
+    border: 1px solid #e41e26;
+    transform: translateY(-4px);
+}
+
+div[data-testid="stMetricValue"] {
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 2rem;
+}
+
+/* BUTTONS */
+.stButton > button {
+    background-color: #e41e26;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    padding: 10px 26px;
+    transition: 0.2s ease;
+}
+
+.stButton > button:hover {
+    background-color: #ff2c35;
+}
+
+/* SELECT BOX */
+.stSelectbox div {
+    background-color: #0f0f0f;
+    color: white;
+    border: 1px solid #222;
+    border-radius: 8px;
+}
+
+/* RADIO */
+.stRadio > div {
+    background: #0f0f0f;
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid #1a1a1a;
+}
+
+/* SLIDER */
+.stSlider > div {
+    color: white;
+}
+
+/* DATAFRAME */
+.stDataFrame {
+    background-color: #0f0f0f;
+    border-radius: 16px;
+    border: 1px solid #222;
+}
+
+/* EXPANDER */
+.streamlit-expanderHeader {
+    background-color: #0f0f0f;
+    border-radius: 10px;
+    border: 1px solid #1f1f1f;
+}
+
+/* SECTION CONTAINER */
+.section-container {
+    background: #0f0f0f;
+    border: 1px solid #1f1f1f;
+    padding: 30px;
+    border-radius: 18px;
+    margin-bottom: 25px;
+}
+
+/* FOOTER */
+.footer {
+    border-top: 1px solid #222;
+    padding: 20px;
+    color: #777;
+}
+
+/* SCROLLBAR */
+::-webkit-scrollbar {
+    width: 8px;
+}
+::-webkit-scrollbar-thumb {
+    background: #e41e26;
+    border-radius: 10px;
+}
+
+</style>
+""", unsafe_allow_html=True)
+
+# ==================== HELPER FUNCTIONS ====================
+
+def get_drift_status():
+    """Read drift report and return status message and CSS class."""
     report_path = 'drift_report.json'
     if not os.path.exists(report_path):
-        return None
+        return None, "⚠️ No drift report available. Run drift detection first.", "drift-info"
     try:
         with open(report_path) as f:
             report = json.load(f)
@@ -21,38 +178,36 @@ def load_drift_status():
         if last.get('drift_detected', False):
             details = last.get('details', {})
             drifted = [k for k, v in details.items() if v.get('drift_detected', False)]
-            msg = f"🚨 **Drift Detected!** Features drifted: {', '.join(drifted)}. Consider retraining."
-            return msg
+            msg = f"🚨 **Drift Detected!** Features: {', '.join(drifted)}. Consider retraining."
+            return True, msg, "drift-error"
         else:
-            return None
+            return False, "✅ No significant drift detected.", "drift-success"
     except Exception as e:
-        print(f"Could not load drift report: {e}")
-        return None
-    
+        return None, f"⚠️ Error reading drift report: {e}", "drift-warning"
 
-# ==================== MLFLOW MODEL LOADING ====================
+
 @st.cache_resource
 def load_production_model():
+    """Load the production model from MLflow."""
     try:
-        mlflow.set_tracking_uri("http://mlflow:5000")
+        mlflow.set_tracking_uri("http://localhost:5000")
         model = mlflow.pyfunc.load_model("models:/EnergyPredictor1/Production")
-        st.success("✅ Loaded production model from MLflow")
         return model
-    except Exception as e:
-        st.warning(f"⚠️ Could not load production model: {e}. Using fallback simulation.")
+    except Exception:
         return None
 
-model = load_production_model()
 
-# ==================== FALLBACK SIMULATION ====================
 def simulate_fallback(building, hour, temp, occupancy, weekend, event):
-    """Rule-based fallback when MLflow model is unavailable."""
+    """Fallback prediction when ML model is unavailable."""
     base = 100 + hour * 8
-    building_factors = {
-        'Library': 1.2, 'Computer Lab': 1.5, 'Classroom': 1.0,
-        'Hostel': 0.8, 'Auditorium': 1.8
+    factors = {
+        'Library': 1.2,
+        'Computer Lab': 1.5,
+        'Classroom': 1.0,
+        'Hostel': 0.8,
+        'Auditorium': 1.8
     }
-    base *= building_factors.get(building, 1.0)
+    base *= factors.get(building, 1.0)
     if temp > 28:
         base *= 1.3
     if occupancy > 0.7:
@@ -63,385 +218,397 @@ def simulate_fallback(building, hour, temp, occupancy, weekend, event):
         base *= 0.7
     return round(base, 2)
 
+
 def predict_energy(building, hour, temp, occupancy, weekend, event):
-    """Use MLflow production model if available, else fallback."""
+    """Predict energy consumption using ML model or fallback."""
+    model = load_production_model()
     if model is not None:
-        # Prepare features – adjust column names to match your training data
         features = pd.DataFrame([{
             'hour_of_day': hour,
             'temperature': temp,
-            'occupancy': occupancy,
-            # If your model also used 'is_weekend' or 'special_event', uncomment:
-            # 'is_weekend': int(weekend),
-            # 'special_event': int(event)
+            'occupancy': occupancy
         }])
         try:
             pred = model.predict(features)[0]
-            # Apply building factor (since model wasn't trained with building type)
-            building_factors = {
-                'Library': 1.2, 'Computer Lab': 1.5, 'Classroom': 1.0,
-                'Hostel': 0.8, 'Auditorium': 1.8
+            factors = {
+                'Library': 1.2,
+                'Computer Lab': 1.5,
+                'Classroom': 1.0,
+                'Hostel': 0.8,
+                'Auditorium': 1.8
             }
-            pred *= building_factors.get(building, 1.0)
+            pred *= factors.get(building, 1.0)
             return round(pred, 2)
-        except Exception as e:
-            st.error(f"Prediction error: {e}. Using fallback.")
+        except Exception:
             return simulate_fallback(building, hour, temp, occupancy, weekend, event)
     else:
         return simulate_fallback(building, hour, temp, occupancy, weekend, event)
 
-# ==================== PAGE CONFIG ====================
-st.set_page_config(
-    page_title="Smart Campus Energy Optimizer",
-    page_icon="⚡",
-    layout="wide"
-)
 
-st.title("⚡ Smart Campus Energy Optimizer")
-st.markdown("### Real Dataset Analysis Dashboard")
-
-# ==================== LOAD REAL DATASETS ====================
 @st.cache_data
-def load_real_datasets():
-    datasets = {}
-    data_files = {
+def load_datasets():
+    """Load all available datasets from the raw data folder."""
+    files = {
         "Research Campus Energy": "data/raw/research_based_campus_energy.csv",
-        "OpenEI Building Energy": "data/raw/openei_building_energy.csv", 
+        "OpenEI Building Energy": "data/raw/openei_building_energy.csv",
         "UCI Appliance Energy": "data/raw/uci_energy_data.csv",
         "Research Citations": "data/raw/research_citations.csv"
     }
-    for name, path in data_files.items():
+    datasets = {}
+    for name, path in files.items():
         if os.path.exists(path):
             try:
-                df = pd.read_csv(path)
-                datasets[name] = df
-                st.sidebar.success(f"✅ Loaded: {name}")
-            except Exception as e:
-                st.sidebar.warning(f"⚠️ Error loading {name}: {e}")
-        else:
-            st.sidebar.error(f"❌ Not found: {name}")
+                datasets[name] = pd.read_csv(path)
+            except Exception:
+                pass  # ignore files that can't be read
     return datasets
 
+
+# ==================== MAIN APP ====================
+
+st.markdown("""
+<h1>SMART CAMPUS ENERGY</h1>
+<p style="color:#777; font-size:18px; margin-top:-10px;">
+AI-Powered Energy Optimization Platform
+</p>
+""", unsafe_allow_html=True)
+# Load datasets
+datasets = load_datasets()
+
 # ==================== SIDEBAR ====================
-
-# Display drift warning in sidebar
-drift_warning = load_drift_status()
-if drift_warning:
-    st.sidebar.warning(drift_warning)
-
-    
 with st.sidebar:
-    st.header("📊 Data Selection")
-    
-    with st.spinner("Loading real datasets..."):
-        datasets = load_real_datasets()
-    
+    st.markdown("## 🌌 Data Explorer")
     if datasets:
-        selected_dataset = st.selectbox(
-            "Choose Dataset",
-            list(datasets.keys())
-        )
-        df = datasets[selected_dataset]
-        
-        st.info(f"""
-        **Dataset:** {selected_dataset}
-        **Records:** {len(df):,}
-        **Columns:** {len(df.columns)}
-        **Size:** {df.memory_usage(deep=True).sum()/(1024*1024):.1f} MB
-        """)
-        
+        selected = st.selectbox("📁 Choose Dataset", list(datasets.keys()))
+        df = datasets[selected].copy()
+
+        st.markdown(f"""
+        <div style="background:#1e2632; border-left:4px solid #4f9cf7; padding:12px; border-radius:8px; margin:10px 0;">
+            <b style="color:#e0e8f0;">{selected}</b><br>
+            <span style="color:#9aa8b9;">Records: {len(df):,} | Columns: {len(df.columns)}</span>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # Date range filter if timestamp column exists
         if 'timestamp' in df.columns:
             df['timestamp'] = pd.to_datetime(df['timestamp'])
-            min_date = df['timestamp'].min().date()
-            max_date = df['timestamp'].max().date()
-            date_range = st.date_input(
-                "Select Date Range",
-                value=(min_date, max_date),
-                min_value=min_date,
-                max_value=max_date
-            )
-            if len(date_range) == 2:
-                mask = (df['timestamp'].dt.date >= date_range[0]) & \
-                       (df['timestamp'].dt.date <= date_range[1])
-                df = df[mask]
-    
+            min_d, max_d = df['timestamp'].min().date(), df['timestamp'].max().date()
+            dr = st.date_input("📅 Date Range", (min_d, max_d), min_value=min_d, max_value=max_d)
+            if len(dr) == 2:
+                df = df[(df['timestamp'].dt.date >= dr[0]) & (df['timestamp'].dt.date <= dr[1])]
+    else:
+        st.error("❌ No datasets found.")
+        st.stop()
+
+    # Drift status
+    drift_detected, drift_msg, drift_class = get_drift_status()
+    st.markdown(f'<div class="{drift_class}">{drift_msg}</div>', unsafe_allow_html=True)
+
     st.markdown("---")
-    st.header("📈 Analysis Type")
-    analysis_type = st.radio(
-        "Select Analysis",
-        ["📈 Energy Patterns", "🏢 Building Comparison", "💰 Savings Analysis", 
-         "🌱 Environmental Impact", "🔮 Live Prediction"]
+    mode = st.radio(
+        "🔮 Analysis Mode",
+        [
+            "📈 Energy Patterns",
+            "🏢 Building Comparison",
+            "💰 Savings Analysis",
+            "🌱 Environmental Impact",
+            "⚡ Live Prediction"
+        ]
     )
 
-# ==================== MAIN DASHBOARD ====================
-if not datasets:
-    st.error("❌ No datasets found in data/raw/ folder!")
-    st.info("""
-    Please ensure you have these files:
-    - `research_based_campus_energy.csv`
-    - `openei_building_energy.csv`
-    - `uci_energy_data.csv`
-    
-    Run `python main.py --real` first to download datasets.
-    """)
-else:
-    with st.expander("🔍 Dataset Preview", expanded=True):
-        st.dataframe(df.head(10), use_container_width=True)
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            st.metric("Total Records", f"{len(df):,}")
-        with col2:
-            st.metric("Columns", len(df.columns))
-        with col3:
-            numeric_cols = df.select_dtypes(include=[np.number]).columns
-            st.metric("Numeric Features", len(numeric_cols))
-    
-    # -------------------- Energy Patterns --------------------
-    if analysis_type == "📈 Energy Patterns":
-        st.header("📈 Energy Consumption Patterns")
-        col1, col2 = st.columns(2)
-        with col1:
-            energy_cols = [col for col in df.columns if 'energy' in col.lower() or 'kwh' in col.lower() or 'meter' in col.lower()]
-            if energy_cols:
-                energy_col = st.selectbox("Select Energy Column", energy_cols)
-                if 'hour_of_day' in df.columns or 'hour' in df.columns:
-                    hour_col = 'hour_of_day' if 'hour_of_day' in df.columns else 'hour'
-                    daily_pattern = df.groupby(hour_col)[energy_col].mean().reset_index()
-                    fig1 = px.line(daily_pattern, x=hour_col, y=energy_col, 
-                                  title="📅 Average Daily Energy Pattern",
-                                  markers=True)
-                    fig1.update_layout(xaxis_title="Hour of Day", yaxis_title="Energy (kWh)")
-                    st.plotly_chart(fig1, use_container_width=True)
-                if 'day_of_week' in df.columns:
-                    weekly_pattern = df.groupby('day_of_week')[energy_col].mean().reset_index()
-                    days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-                    fig2 = px.bar(weekly_pattern, x='day_of_week', y=energy_col,
-                                 title="📆 Weekly Energy Pattern",
-                                 labels={'day_of_week': 'Day', energy_col: 'Energy (kWh)'})
-                    fig2.update_xaxes(ticktext=days, tickvals=list(range(7)))
-                    st.plotly_chart(fig2, use_container_width=True)
-        with col2:
-            if energy_cols:
-                fig3 = px.histogram(df, x=energy_cols[0], 
-                                   title="📊 Energy Distribution",
-                                   nbins=50)
-                fig3.update_layout(xaxis_title="Energy (kWh)", yaxis_title="Frequency")
-                st.plotly_chart(fig3, use_container_width=True)
-                st.subheader("📊 Statistics")
-                stats_df = pd.DataFrame({
-                    'Metric': ['Mean', 'Std Dev', 'Min', 'Max', '25%', '75%'],
-                    'Value': [
-                        f"{df[energy_cols[0]].mean():.1f} kWh",
-                        f"{df[energy_cols[0]].std():.1f} kWh",
-                        f"{df[energy_cols[0]].min():.1f} kWh",
-                        f"{df[energy_cols[0]].max():.1f} kWh",
-                        f"{df[energy_cols[0]].quantile(0.25):.1f} kWh",
-                        f"{df[energy_cols[0]].quantile(0.75):.1f} kWh"
-                    ]
-                })
-                st.dataframe(stats_df, use_container_width=True, hide_index=True)
-    
-    # -------------------- Building Comparison --------------------
-    elif analysis_type == "🏢 Building Comparison":
-        st.header("🏢 Building Energy Comparison")
-        building_cols = [col for col in df.columns if 'building' in col.lower() or 'site' in col.lower()]
-        energy_cols = [col for col in df.columns if 'energy' in col.lower() or 'kwh' in col.lower()]
-        if building_cols and energy_cols:
-            building_col = st.selectbox("Select Building Column", building_cols)
-            energy_col = st.selectbox("Select Energy Column", energy_cols)
-            building_stats = df.groupby(building_col)[energy_col].agg(['mean', 'std', 'count']).round(2)
-            building_stats = building_stats.sort_values('mean', ascending=False)
-            col1, col2 = st.columns(2)
-            with col1:
-                fig1 = px.bar(building_stats.reset_index(), 
-                            x=building_col, y='mean',
-                            title="🏢 Average Energy by Building",
-                            error_y='std')
-                fig1.update_layout(xaxis_title="Building", yaxis_title="Average Energy (kWh)")
-                st.plotly_chart(fig1, use_container_width=True)
-            with col2:
-                st.subheader("📊 Building Statistics")
-                st.dataframe(building_stats.head(10), use_container_width=True)
-                avg_energy = df[energy_col].mean()
-                potential_savings = avg_energy * 0.15
-                daily_cost_savings = potential_savings * 8
-                monthly_savings = daily_cost_savings * 30
-                st.metric("Average Energy", f"{avg_energy:.1f} kWh")
-                st.metric("Potential Savings (15%)", f"{potential_savings:.1f} kWh/day")
-                st.metric("Cost Savings", f"₹{daily_cost_savings:.0f}/day")
-                st.metric("Monthly Impact", f"₹{monthly_savings:,.0f}")
-    
-    # -------------------- Savings Analysis --------------------
-    elif analysis_type == "💰 Savings Analysis":
-        st.header("💰 Cost & Savings Analysis")
-        energy_cols = [col for col in df.columns if 'energy' in col.lower() or 'kwh' in col.lower()]
-        if energy_cols:
-            energy_col = energy_cols[0]
-            avg_energy = df[energy_col].mean()
-            savings_percent = st.slider("Optimization Percentage", 5, 25, 15) / 100
-            current_daily = avg_energy
-            optimized_daily = current_daily * (1 - savings_percent)
-            energy_saved = current_daily - optimized_daily
-            electricity_rate = st.number_input("Electricity Rate (₹/kWh)", 5.0, 15.0, 8.0, 0.5)
-            daily_cost_saved = energy_saved * electricity_rate
-            monthly_cost_saved = daily_cost_saved * 30
-            annual_cost_saved = daily_cost_saved * 365
-            co2_per_kwh = st.number_input("CO₂ per kWh (kg)", 0.5, 1.5, 0.82, 0.01)
-            daily_co2_saved = energy_saved * co2_per_kwh
-            annual_co2_saved = daily_co2_saved * 365
-            trees_equivalent = annual_co2_saved / 20
-            col1, col2, col3, col4 = st.columns(4)
-            with col1:
-                st.metric("Current Usage", f"{current_daily:.1f} kWh/day")
-            with col2:
-                st.metric("Optimized Usage", f"{optimized_daily:.1f} kWh/day", 
-                         delta=f"-{savings_percent*100:.1f}%")
-            with col3:
-                st.metric("Energy Saved", f"{energy_saved:.1f} kWh/day")
-            with col4:
-                st.metric("Daily Savings", f"₹{daily_cost_saved:.0f}")
-            breakdown_data = {
-                'Period': ['Daily', 'Monthly', 'Annual'],
-                'Energy Saved (kWh)': [energy_saved, energy_saved*30, energy_saved*365],
-                'Cost Savings (₹)': [daily_cost_saved, monthly_cost_saved, annual_cost_saved],
-                'CO₂ Reduced (kg)': [daily_co2_saved, daily_co2_saved*30, annual_co2_saved]
-            }
-            breakdown_df = pd.DataFrame(breakdown_data)
-            st.dataframe(breakdown_df, use_container_width=True)
-            fig = go.Figure()
-            fig.add_trace(go.Bar(
-                name='Current',
-                x=['Energy Usage'],
-                y=[current_daily],
-                marker_color='red',
-                text=[f"{current_daily:.1f} kWh"],
-                textposition='auto'
-            ))
-            fig.add_trace(go.Bar(
-                name='Optimized',
-                x=['Energy Usage'],
-                y=[optimized_daily],
-                marker_color='green',
-                text=[f"{optimized_daily:.1f} kWh"],
-                textposition='auto'
-            ))
-            fig.update_layout(title='Energy Optimization Impact', yaxis_title='Energy (kWh/day)', barmode='group')
-            st.plotly_chart(fig, use_container_width=True)
-    
-    # -------------------- Environmental Impact --------------------
-    elif analysis_type == "🌱 Environmental Impact":
-        st.header("🌱 Environmental Impact Analysis")
-        energy_cols = [col for col in df.columns if 'energy' in col.lower() or 'kwh' in col.lower()]
-        if energy_cols:
-            energy_col = energy_cols[0]
-            total_energy = df[energy_col].sum()
-            co2_per_kwh = 0.82
-            total_co2 = total_energy * co2_per_kwh
-            trees_needed = total_co2 / 20
-            cars_equivalent = total_co2 / 4200
-            col1, col2, col3, col4 = st.columns(4)
-            with col1:
-                st.metric("Total Energy", f"{total_energy:,.0f} kWh")
-            with col2:
-                st.metric("CO₂ Emissions", f"{total_co2:,.0f} kg")
-            with col3:
-                st.metric("Trees Needed", f"{trees_needed:.0f} trees")
-            with col4:
-                st.metric("Car Equivalents", f"{cars_equivalent:.1f} cars/year")
-            env_data = {
-                'Source': ['Current Campus', 'With 15% Optimization'],
-                'CO₂ Emissions (tons)': [total_co2/1000, total_co2*0.85/1000],
-                'Energy (MWh)': [total_energy/1000, total_energy*0.85/1000]
-            }
-            env_df = pd.DataFrame(env_data)
-            fig = px.bar(env_df, x='Source', y='CO₂ Emissions (tons)',
-                        title='Carbon Emissions Comparison',
-                        text='CO₂ Emissions (tons)')
-            fig.update_traces(texttemplate='%{text:.1f} tons', textposition='outside')
-            st.plotly_chart(fig, use_container_width=True)
-            citations_path = "data/raw/research_citations.csv"
-            if os.path.exists(citations_path):
-                st.subheader("📚 Research Basis")
-                citations = pd.read_csv(citations_path)
-                for _, row in citations.iterrows():
-                    with st.expander(f"📄 {row['study']} ({row['year']})"):
-                        st.write(f"**Finding:** {row['key_finding']}")
-                        st.write(f"**Source:** {row['source']}")
-    
-    # -------------------- Live Prediction --------------------
-    elif analysis_type == "🔮 Live Prediction":
-        st.header("🔮 Live Energy Prediction")
-        col1, col2 = st.columns(2)
-        with col1:
-            building = st.selectbox(
-                "Building Type",
-                ["Library", "Computer Lab", "Classroom", "Hostel", "Auditorium"]
+# ==================== UTILITY ====================
+# Identify energy-related columns
+energy_cols = [
+    c for c in df.columns
+    if 'energy' in c.lower() or 'kwh' in c.lower() or 'meter' in c.lower()
+]
+if not energy_cols:
+    # Fallback: use first numeric column
+    energy_cols = df.select_dtypes(include=[np.number]).columns[:1]
+
+# ==================== DATASET PREVIEW ====================
+with st.expander("🔍 Dataset Preview", expanded=False):
+    st.dataframe(df.head(10), use_container_width=True)
+    cols = st.columns(3)
+    cols[0].metric("Records", len(df))
+    cols[1].metric("Columns", len(df.columns))
+    cols[2].metric("Numeric Features", len(df.select_dtypes(include=[np.number]).columns))
+
+# ==================== MAIN CONTENT SECTIONS ====================
+
+if mode == "📈 Energy Patterns":
+    st.markdown("<h2>📈 Energy Consumption Patterns</h2>", unsafe_allow_html=True)
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        energy_col = st.selectbox("Energy Column", energy_cols, key="pat_eng")
+
+        # Daily pattern
+        if 'hour_of_day' in df.columns or 'hour' in df.columns:
+            hour_col = 'hour_of_day' if 'hour_of_day' in df.columns else 'hour'
+            daily = df.groupby(hour_col)[energy_col].mean().reset_index()
+            fig = px.line(
+                daily,
+                x=hour_col,
+                y=energy_col,
+                title="Daily Pattern",
+                markers=True,
+                color_discrete_sequence=[PUMA_RED]
             )
-            hour = st.slider("Hour of Day", 0, 23, 14)
-            temperature = st.slider("Temperature (°C)", 0, 45, 32)
+            fig.update_layout(
+    template="plotly_dark",
+    paper_bgcolor="#000000",
+    plot_bgcolor="#000000",
+    font=dict(color="white", family="Inter"),
+    title_font=dict(size=20, color="white")
+)
+            st.plotly_chart(fig, use_container_width=True)
+
+        # Weekly pattern
+        if 'day_of_week' in df.columns:
+            weekly = df.groupby('day_of_week')[energy_col].mean().reset_index()
+            days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+            fig = px.bar(
+                weekly,
+                x='day_of_week',
+                y=energy_col,
+                title="Weekly Pattern",
+                color=energy_col,
+                color_continuous_scale='Blues'
+            )
+            fig.update_xaxes(ticktext=days, tickvals=list(range(7)))
+            fig.update_layout(
+    template="plotly_dark",
+    paper_bgcolor="#000000",
+    plot_bgcolor="#000000",
+    font=dict(color="white", family="Inter"),
+    title_font=dict(size=20, color="white")
+)
+
+    with col2:
+        fig = px.histogram(
+            df,
+            x=energy_cols[0],
+            title="Energy Distribution",
+            nbins=50,
+            color_discrete_sequence=[PUMA_RED]
+        )
+        fig.update_layout(
+    template="plotly_dark",
+    paper_bgcolor="#000000",
+    plot_bgcolor="#000000",
+    font=dict(color="white", family="Inter"),
+    title_font=dict(size=20, color="white")
+)
+        st.plotly_chart(fig, use_container_width=True)
+        st.dataframe(df[energy_cols[0]].describe().round(2), use_container_width=True)
+
+elif mode == "🏢 Building Comparison":
+    st.markdown("<h2>🏢 Building Energy Comparison</h2>", unsafe_allow_html=True)
+
+    building_cols = [c for c in df.columns if 'building' in c.lower() or 'site' in c.lower()]
+    if building_cols and energy_cols:
+        col1, col2 = st.columns(2)
+
+        with col1:
+            building_col = st.selectbox("Building Column", building_cols)
+            energy_col = st.selectbox("Energy Column", energy_cols, key="build_eng")
+
+            stats = df.groupby(building_col)[energy_col].agg(['mean', 'std', 'count']).round(2)
+            stats = stats.sort_values('mean', ascending=False)
+
+            fig = px.bar(
+                stats.reset_index(),
+                x=building_col,
+                y='mean',
+                error_y='std',
+                title="Average Energy by Building",
+                color='mean',
+                color_continuous_scale='Viridis'
+            )
+            fig.update_layout(
+    template="plotly_dark",
+    paper_bgcolor="#000000",
+    plot_bgcolor="#000000",
+    font=dict(color="white", family="Inter"),
+    title_font=dict(size=20, color="white")
+)
+            st.plotly_chart(fig, use_container_width=True)
+
         with col2:
-            occupancy = st.slider("Occupancy (%)", 0, 100, 75) / 100
-            weekend = st.checkbox("Weekend")
-            event = st.checkbox("Special Event (Exam/Holiday)")
+            st.dataframe(stats.head(10), use_container_width=True)
+            avg = df[energy_col].mean()
+            st.metric("Overall Average", f"{avg:.1f} kWh")
+            st.metric("Potential Savings (15%)", f"{avg * 0.15:.1f} kWh/day")
+    else:
+        st.warning("Building or energy column not found.")
+
+elif mode == "💰 Savings Analysis":
+    st.markdown("<h2>💰 Cost & Savings Analysis</h2>", unsafe_allow_html=True)
+
+    if len(energy_cols) > 0:
+        energy_col = energy_cols[0]
+        avg = df[energy_col].mean()
+        percent = st.slider("Optimization %", 5, 25, 15, 1) / 100
+        current = avg
+        optimized = current * (1 - percent)
+        saved = current - optimized
+        rate = st.number_input("Electricity Rate (₹/kWh)", 5.0, 15.0, 8.0, 0.5)
+        cost_saved = saved * rate
+        co2_saved = saved * 0.82
+
+        cols = st.columns(4)
+        cols[0].metric("Current", f"{current:.1f} kWh/day")
+        cols[1].metric("Optimized", f"{optimized:.1f} kWh/day", delta=f"-{percent * 100:.0f}%")
+        cols[2].metric("Energy Saved", f"{saved:.1f} kWh/day")
+        cols[3].metric("Daily Savings", f"₹{cost_saved:.0f}")
+
+        data = pd.DataFrame({
+            'Period': ['Daily', 'Monthly', 'Annual'],
+            'Energy Saved (kWh)': [saved, saved * 30, saved * 365],
+            'Cost Saved (₹)': [cost_saved, cost_saved * 30, cost_saved * 365],
+            'CO₂ Reduced (kg)': [co2_saved, co2_saved * 30, co2_saved * 365]
+        })
+        st.dataframe(data, use_container_width=True)
+
+        fig = go.Figure()
+        fig.add_trace(go.Bar(
+            name='Current',
+            x=['Usage'],
+            y=[current],
+            marker_color='#e07b7b',
+            text=[f"{current:.1f}"]
+        ))
+        fig.add_trace(go.Bar(
+            name='Optimized',
+            x=['Usage'],
+            y=[optimized],
+            marker_color='#4f9cf7',
+            text=[f"{optimized:.1f}"]
+        ))
+        fig.update_layout(
+    template="plotly_dark",
+    paper_bgcolor="#000000",
+    plot_bgcolor="#000000",
+    font=dict(color="white", family="Inter"),
+    title_font=dict(size=20, color="white")
+)
         
-        if st.button("Predict Energy"):
-            with st.spinner("Calculating..."):
-                predicted = predict_energy(building, hour, temperature, occupancy, weekend, event)
-                optimized = predicted * 0.85
-                saved = predicted - optimized
-                cost_saved = saved * 8
-                co2_saved = saved * 0.82
-                
-                col1, col2, col3, col4 = st.columns(4)
-                col1.metric("Predicted Energy", f"{predicted:.1f} kWh")
-                col2.metric("Optimized Energy", f"{optimized:.1f} kWh", delta=f"-{saved:.1f} kWh")
-                col3.metric("Cost Savings", f"₹{cost_saved:.0f}/day")
-                col4.metric("CO₂ Reduction", f"{co2_saved:.1f} kg/day")
-                
-                fig = go.Figure(go.Indicator(
-                    mode="gauge+number",
-                    value=predicted,
-                    title={'text': "Predicted Energy (kWh)"},
-                    domain={'x': [0, 1], 'y': [0, 1]},
-                    gauge={
-                        'axis': {'range': [0, predicted*1.5]},
-                        'bar': {'color': "darkblue"},
-                        'steps': [
-                            {'range': [0, optimized], 'color': "lightgreen"},
-                            {'range': [optimized, predicted], 'color': "orange"}
-                        ],
-                        'threshold': {
-                            'line': {'color': "red", 'width': 4},
-                            'thickness': 0.75,
-                            'value': predicted
-                        }
+        st.plotly_chart(fig, use_container_width=True)
+    else:
+        st.warning("No energy column.")
+
+elif mode == "🌱 Environmental Impact":
+    st.markdown("<h2>🌱 Environmental Impact</h2>", unsafe_allow_html=True)
+
+    if energy_cols:
+        energy_col = energy_cols[0]
+        total = df[energy_col].sum()
+        co2_total = total * 0.82
+        trees = co2_total / 20
+        cars = co2_total / 4200
+
+        cols = st.columns(4)
+        cols[0].metric("Total Energy", f"{total:,.0f} kWh")
+        cols[1].metric("CO₂ Emissions", f"{co2_total:,.0f} kg")
+        cols[2].metric("Trees Needed", f"{trees:.0f}")
+        cols[3].metric("Car Equivalent", f"{cars:.1f} years")
+
+        env_df = pd.DataFrame({
+            'Scenario': ['Current', 'With 15% Optimization'],
+            'CO₂ (tons)': [co2_total / 1000, co2_total * 0.85 / 1000]
+        })
+        fig = px.bar(
+            env_df,
+            x='Scenario',
+            y='CO₂ (tons)',
+            text='CO₂ (tons)',
+            color='Scenario',
+            color_discrete_sequence=[PUMA_RED]
+        )
+        fig.update_traces(texttemplate='%{text:.1f}', textposition='outside')
+        fig.update_layout(
+    template="plotly_dark",
+    paper_bgcolor="#000000",
+    plot_bgcolor="#000000",
+    font=dict(color="white", family="Inter"),
+    title_font=dict(size=20, color="white")
+)
+        st.plotly_chart(fig, use_container_width=True)
+
+        # Show research citations if available
+        if os.path.exists("data/raw/research_citations.csv"):
+            with st.expander("📚 Research Basis"):
+                citations = pd.read_csv("data/raw/research_citations.csv")
+                for _, row in citations.iterrows():
+                    st.markdown(f"**{row['study']}** ({row['year']}) – {row['key_finding']}")
+    else:
+        st.warning("No energy column.")
+
+elif mode == "⚡ Live Prediction":
+    st.markdown("<h2>⚡ Live Energy Prediction</h2>", unsafe_allow_html=True)
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        building = st.selectbox(
+            "Building",
+            ["Library", "Computer Lab", "Classroom", "Hostel", "Auditorium"]
+        )
+        hour = st.slider("Hour", 0, 23, 14)
+        temp = st.slider("Temperature (°C)", 0, 45, 32)
+
+    with col2:
+        occ = st.slider("Occupancy %", 0, 100, 75) / 100
+        weekend = st.checkbox("Weekend")
+        event = st.checkbox("Special Event")
+
+    if st.button("🔮 Predict Energy", type="primary"):
+        with st.spinner("Calculating..."):
+            pred = predict_energy(building, hour, temp, occ, weekend, event)
+            opt = pred * 0.85
+            saved = pred - opt
+            cost = saved * 8
+            co2 = saved * 0.82
+
+            cols = st.columns(4)
+            cols[0].metric("Predicted", f"{pred:.1f} kWh")
+            cols[1].metric("Optimized", f"{opt:.1f} kWh", delta=f"-{saved:.1f}")
+            cols[2].metric("Cost Savings", f"₹{cost:.0f}/day")
+            cols[3].metric("CO₂ Reduction", f"{co2:.1f} kg/day")
+
+            fig = go.Figure(go.Indicator(
+                mode="gauge+number",
+                value=pred,
+                title={'text': "Predicted Energy (kWh)"},
+                domain={'x': [0, 1], 'y': [0, 1]},
+                gauge={
+                    'axis': {'range': [0, pred * 1.5]},
+                    'bar': {'color': '#4f9cf7'},
+                    'steps': [
+                        {'range': [0, opt], 'color': '#2e6b4e'},
+                        {'range': [opt, pred], 'color': '#a55e5e'}
+                    ],
+                    'threshold': {
+                        'line': {'color': 'white', 'width': 4},
+                        'thickness': 0.75,
+                        'value': pred
                     }
-                ))
-                fig.update_layout(height=300)
-                st.plotly_chart(fig, use_container_width=True)
+                }
+            ))
+            fig.update_layout(
+    template="plotly_dark",
+    paper_bgcolor="#000000",
+    plot_bgcolor="#000000",
+    font=dict(color="white", family="Inter"),
+    title_font=dict(size=20, color="white")
+)
+            st.plotly_chart(fig, use_container_width=True)
 
 # ==================== FOOTER ====================
-st.markdown("---")
-footer_cols = st.columns([3, 1, 1])
-with footer_cols[0]:
-    st.caption("📊 **Real Dataset Analysis Dashboard** | Data Source: Your Downloaded Datasets")
-with footer_cols[1]:
-    st.caption(f"📅 {datetime.now().strftime('%Y-%m-%d')}")
-with footer_cols[2]:
-    st.caption("🔬 Research Project")
-
-# Add CSS
 st.markdown("""
-<style>
-    .stMetric {
-        background-color: #f0f2f6;
-        padding: 15px;
-        border-radius: 10px;
-        border-left: 5px solid #4CAF50;
-    }
-    div[data-testid="stExpander"] div[role="button"] p {
-        font-size: 1.1rem;
-        font-weight: 600;
-    }
-</style>
+<div class="footer">
+    <b>⚡ Smart Campus Energy Optimizer</b> – AI‑Powered MLOps Pipeline | Data: ASHRAE, UCI, OpenEI
+</div>
 """, unsafe_allow_html=True)

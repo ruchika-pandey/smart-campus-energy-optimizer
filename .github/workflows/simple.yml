@@ -7,5 +7,5 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
-      - run: echo "Project is working"
-      - run: python --version
+      - run: echo "Smart Campus Energy Optimizer"
+      - run: echo "Pipeline is working!"

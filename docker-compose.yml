@@ -1,0 +1,40 @@
+services:
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v3.10.0-full
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./mlruns:/mlflow/mlruns                   
+      - ./mlflow.db:/mlflow/mlflow.db
+    command: >
+      mlflow server
+      --host 0.0.0.0
+      --port 5000
+      --backend-store-uri sqlite:///mlflow/mlflow.db
+      --default-artifact-root ./mlruns
+      --artifacts-destination ./mlruns
+      --serve-artifacts
+      --allowed-hosts '*'
+
+  api:
+    build: ./api
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./mlruns:/app/mlruns
+    depends_on:
+      - mlflow
+    environment:
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+
+  dashboard:
+    build: ./dashboard
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./mlruns:/app/mlruns
+      - ./data:/app/data
+    depends_on:
+      - api
+    environment:
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
