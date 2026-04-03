@@ -84,17 +84,17 @@ MLflow UI: http://localhost:5000
 
 ### Without Docker
 
-Create virtual environment
+# Create virtual environment
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 
-Install dependencies
+# Install dependencies
 pip install -r requirements.txt
 
-Run dashboard
+# Run dashboard
 streamlit run dashboard/app.py
 
-In another terminal, start MLflow
+# In another terminal, start MLflow
 mlflow ui
 
 ## 📁 Project Structure
