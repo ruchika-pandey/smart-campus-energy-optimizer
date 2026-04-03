@@ -4,7 +4,7 @@
 [![MLflow](https://img.shields.io/badge/MLflow-3.9.0-orange)](https://mlflow.org/)
 [![Docker](https://img.shields.io/badge/Docker-24.0%2B-blue)](https://www.docker.com/)
 [![Streamlit](https://img.shields.io/badge/Streamlit-1.36.0-red)](https://streamlit.io/)
-[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
+
 
 ## 📌 Project Overview
 
@@ -33,26 +33,14 @@ Campuses waste massive amounts of energy:
 - No predictive capabilities for energy management
 
 ## 🏗️ Architecture
-+-----------------------------------------------------------+
-| SMART CAMPUS ENERGY OPTIMIZER |
-+-----------------------------------------------------------+
-| |
-| +-------------+ +-------------+ +-------------+ |
-| | DATA LAYER |-->| MODEL LAYER |-->| MLOps LAYER | |
-| +-------------+ +-------------+ +-------------+ |
-| | UCI Dataset | |RandomForest | | MLflow | |
-| | OpenEI Data | |150 trees | | GitHub | |
-| | Synthetic | |max_depth=12 | | Jenkins | |
-| +-------------+ +-------------+ +-------------+ |
-| | |
-| v |
-| +-------------------+ |
-| | STREAMLIT DASHBOARD| |
-| | • Live Predictions | |
-| | • Cost Savings | |
-| | • CO₂ Reduction | |
-| +-------------------+ |
-+-----------------------------------------------------------+
+**Data Layer → Model Layer → MLOps Layer → Dashboard**
+
+| Layer | Components |
+|-------|------------|
+| **Data Layer** | UCI Dataset, OpenEI Data, Synthetic Data |
+| **Model Layer** | RandomForest (150 trees, max_depth=12) |
+| **MLOps Layer** | MLflow, GitHub Actions, Jenkins, Docker |
+| **Dashboard** | Streamlit (Live Predictions, Cost Savings, CO₂ Reduction) |
 
 ## 🛠️ Tech Stack
 
@@ -110,18 +98,45 @@ streamlit run dashboard/app.py
 mlflow ui
 
 📁 Project Structure
-
 smart-campus-energy-optimizer/
-├── .github/workflows/     # GitHub Actions CI/CD
+│
+├── .github/workflows/     # GitHub Actions CI/CD pipelines
+│   ├── auto-retrain.yml   # Weekly model retraining
+│   ├── drift-detection.yml # Drift monitoring
+│   └── simple.yml         # Basic CI pipeline
+│
 ├── api/                   # FastAPI service
+│   ├── app.py             # API endpoints
+│   ├── Dockerfile         # Container definition
+│   └── requirements.txt   # Dependencies
+│
 ├── dashboard/             # Streamlit dashboard
+│   ├── app.py             # Main dashboard
+│   ├── Dockerfile         # Container definition
+│   └── requirements.txt   # Dependencies
+│
 ├── mlops/                 # MLOps components
+│   ├── compare_models.py  # Model comparison
+│   ├── drift_detection.py # Drift monitoring
+│   └── data_validation.py # Data quality checks
+│
 ├── models/                # ML models
+│   ├── auto_retrain.py    # Scheduled retraining
+│   ├── benchmark.py       # Performance benchmarks
+│   └── train_model.py     # Training pipeline
+│
 ├── tests/                 # Unit tests
+│   ├── test_sample.py     # Basic tests
+│   └── test_calculations.py # Calculation tests
+│
 ├── utils/                 # Utilities
-├── docker-compose.yml     # Docker orchestration
+│   ├── calculations.py    # Cost/CO₂ formulas
+│   └── config.py          # Configuration
+│
+├── docker-compose.yml     # Multi-container setup
 ├── Jenkinsfile            # Jenkins pipeline
-└── requirements.txt       # Dependencies
+├── requirements.txt       # Python dependencies
+└── README.md              # This file
 
 🔄 CI/CD Pipeline
 GitHub Actions
