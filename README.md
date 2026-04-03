@@ -168,11 +168,11 @@ Streamlit	8501	User dashboard
 
 <2 years payback period
 
-## 📊 Complete Project Flowchart
+### Complete Project Flowchart
 
 ```mermaid
 flowchart TD
-    START([Problem: Campus Energy Waste]) --> PHASE1
+    START([Problem:Campus Engery Waste]) --> PHASE1
 
     subgraph PHASE1 [PHASE 1: DATA COLLECTION]
         A1[UCI Appliances Dataset]
