@@ -4,6 +4,9 @@ on:
   schedule:
     - cron: '0 2 * * 0'   # Every Sunday at 2 AM
   workflow_dispatch:       # Manual trigger
+  push:                    # ← ADD THIS LINE
+    paths:                 # ← ADD THIS LINE
+      - '.github/workflows/auto-retrain.yml'  # ← ADD THIS LINE
 
 jobs:
   retrain:
